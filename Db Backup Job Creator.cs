@@ -28,8 +28,9 @@ namespace Db_Backup_Job_Creator
             string username = tb_id.Text;
             string password = tb_password.Text;
             string connectionString = null;
+            string serverName = tb_server.Text;
 
-            connectionString = "Data source=localhost;User ID=" + username + ";Password=" + password;
+            connectionString = "Data source="+serverName+";User ID=" + username + ";Password=" + password;
 
             cnn = new SqlConnection(connectionString);
 
@@ -224,10 +225,10 @@ namespace Db_Backup_Job_Creator
             else
             {
                 try
-               {
-                    query("backup database " + dbname + " to disk='" + s + "\\" + n + ".bak'");
+                {
+                    query("backup database [" + dbname + "] to disk='" + s + "\\" + n + ".bak'");
                     MessageBox.Show("Created backup for " + dbname + ".", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-               }
+                }
                 catch (Exception ex)
                 {
                     MessageBox.Show("Could not backup database. Check data or contact developer for help. ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
