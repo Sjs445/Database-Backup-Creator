@@ -37,7 +37,7 @@ namespace Db_Backup_Job_Creator
             try
             {
                 cnn.Open();
-                MessageBox.Show("The database connection has been opened, now \nselect the database you want to create backups for. ", "Connection Open!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                MessageBox.Show("The database connection has been opened. \nSelect the database you want to create backups for. ", "Connection Open!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 Combobox_db.Items.Clear();
                 cmd = new SqlCommand("select * from sysdatabases order by name", cnn);
                 dr = cmd.ExecuteReader();
@@ -46,6 +46,7 @@ namespace Db_Backup_Job_Creator
                     Combobox_db.Items.Add(dr[0]);
                 }
                 dr.Close();
+                enableRight();
             }
             catch (Exception ex)
             {
@@ -55,28 +56,23 @@ namespace Db_Backup_Job_Creator
 
         private void btn_list_Click(object sender, EventArgs e)
         {
+            if(isEmptyLeft())
+            {
+                return;
+            }
             CreateConnection();
         }
 
-        public void blank(string str)
+        public void createJobs(string str)
         {
-            if (string.IsNullOrEmpty(Combobox_db.Text) | string.IsNullOrEmpty(Combobox_db.Text))
+            if (isEmptyRight())
             {
-                MessageBox.Show("Please select a Database and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 return;
-            }
-            else if(string.IsNullOrEmpty(tb_path.Text) | string.IsNullOrEmpty(tb_path.Text))
-            {
-                MessageBox.Show("Please enter a path and try again.", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-            }
-            else if (string.IsNullOrEmpty(tb_backupname.Text) | string.IsNullOrEmpty(tb_backupname.Text))
-            {
-                MessageBox.Show("Please enter a backup name and try again. ", "Missing Infromation!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
             }
             else
             {
-               // string jobname = tb_backupname.Text;
-
+                createFolder();
+                createDaysofweekPath();
                 string dbname = Combobox_db.Text;
                 string login = tb_id.Text;
                 string servername = tb_server.Text;
@@ -89,7 +85,10 @@ namespace Db_Backup_Job_Creator
 
                     query("use msdb;");
                     try
-                    {
+                    {   //Next feature to add is to specify how many days of the week you want to create backups for.
+                        //Another feature could be to check off another database for backing up multiple databases.
+                        //Create a folder called 'Failed Logs' or something in order to store why the program failed to backup/create jobs.
+                       
                         for (int i = 0; i <= 4; i++)
                         {
                             string jobname = tb_backupname.Text + " " + day(i);
@@ -104,9 +103,9 @@ namespace Db_Backup_Job_Creator
                                     "@notify_level_page=2");
 
                             query("exec sp_add_jobstep @job_name = N" + "'" + jobname + "'," +
-                                    "@step_name=" + dbname + "," +
+                                    "@step_name=[" + dbname + "]," +
                                     "@subsystem='TSQL'," +
-                                    "@command='BACKUP DATABASE [" + dbname + "] TO DISK=''" + pathname + "\\" + day(i) + "\\" + backupname + ".bak '' WITH NOFORMAT, INIT,  NAME=''" + dbname + "-Full Database Backup'', SKIP, NOREWIND, NOUNLOAD,  STATS = 10'");
+                                    "@command='BACKUP DATABASE [" + dbname + "] TO DISK=''" + pathname + "\\" + pathDay(i) + "\\" + backupname + ".bak '' WITH NOFORMAT, INIT,  NAME=''" + dbname + "-Full Database Backup'', SKIP, NOREWIND, NOUNLOAD,  STATS = 10'");
 
                             query("exec sp_add_jobschedule @job_name= N" + "'" + jobname + "'," +
                                     "@name = 'ScheduledBackup_msdb'," +
@@ -119,12 +118,12 @@ namespace Db_Backup_Job_Creator
                                 "@server_name=N" + "'" + servername + "';");
                         }
                         MessageBox.Show("Created four jobs for " + dbname+".");
-                    }
+                        }
                     catch (Exception ex)
-                   {
-                        MessageBox.Show("Could not create jobs. Check data or contact developer for help. ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    {
+                        MessageBox.Show("Could not create jobs.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
-                    }
+                }
             }
         }
 
@@ -144,9 +143,9 @@ namespace Db_Backup_Job_Creator
 
         private void btn_jobs_Click(object sender, EventArgs e)
         {
-            blank("backup");
+            createJobs("backup");
         }
-
+        
         public string day(int x)
         {
             switch (x)
@@ -165,6 +164,7 @@ namespace Db_Backup_Job_Creator
                     return "INVALID";
             }
         }
+        
         public string finterval(int x)
         {
             switch(x)
@@ -181,6 +181,25 @@ namespace Db_Backup_Job_Creator
                     return "32";
                 default:
                     return "INVALID";
+            }
+        }
+        public string pathDay(int x)
+        {
+            switch(x)
+            {
+                case 0:
+                    return "DB Backup Creator\\Monday\\";
+                case 1:
+                    return "DB Backup Creator\\Tuesday\\";
+                case 2:
+                    return "DB Backup Creator\\Wednesday\\";
+                case 3:
+                    return "DB Backup Creator\\Thursday\\";
+                case 4:
+                    return "DB Backup Creator\\Monday\\";
+                default:
+                    return "Error Log";
+
             }
         }
 
@@ -203,38 +222,22 @@ namespace Db_Backup_Job_Creator
             string servername = tb_server.Text;
 
 
-            s = tb_path.Text;
+            s = tb_path.Text+"\\DB Backup Creator\\Backups\\";
             n = tb_backupname.Text;
-
-            if (servername == "")
+            if (!isEmptyLeft() && !isEmptyRight())
             {
-                MessageBox.Show("Please enter a server name and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-            }
-            else if(dbname == "")
-            {
-                MessageBox.Show("Please select a Database and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-            }
-            else if(s == "")
-            {
-                MessageBox.Show("Please select a proper path and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-            }
-            else if(n == "")
-            {
-                MessageBox.Show("Please enter a backup name and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-            }
-            else
-            {
+                createFolder();
+                createBackupFolder();
                 try
                 {
                     query("backup database [" + dbname + "] to disk='" + s + "\\" + n + ".bak'");
-                    MessageBox.Show("Created backup for " + dbname + ".", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Created backup file for " + dbname + " in "+s, "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Could not backup database. Check data or contact developer for help. ", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Could not backup database.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-            
         }
 
         private void lnklbl_schedule_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -245,8 +248,115 @@ namespace Db_Backup_Job_Creator
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show("If the program fails to make the backup file or fails to create jobs make sure the following are true.\n" +
-                "1. You have selected a database. \n2. The server name needs to be the hostname and the program must be on the server to create the jobs. \n3." +
-                " The path must be output to a folder with four folders inside it named MON, TUE, WED, THU, FRI.","Common Errors.", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                "1. The program must be on the machine running the SQL server." +
+                "\n2. The server name needs to be the hostname. It can't be 'localhost'.","Common Errors.", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        public void createFolder()
+        {
+            string pathName = tb_path.Text+"DB Backup Creator\\";
+            if(!Directory.Exists(pathName))
+            {
+                Directory.CreateDirectory(pathName);
+                return;
+            }
+            return;
+        }
+
+        public void createBackupFolder()
+        {
+            if(!Directory.Exists(tb_path.Text+"DB Backup Creator\\Backups\\"))
+            {
+                Directory.CreateDirectory(tb_path.Text + "DB Backup Creator\\Backups\\");
+                return;
+            }
+        }
+
+        public void createDaysofweekPath()
+        {
+            string Monday = tb_path.Text + "DB Backup Creator\\Monday\\";
+            string Tuesday = tb_path.Text + "DB Backup Creator\\Tuesday\\";
+            string Wednesday = tb_path.Text + "DB Backup Creator\\Wednesday\\";
+            string Thursday = tb_path.Text + "DB Backup Creator\\Thursday\\";
+            string Friday = tb_path.Text + "DB Backup Creator\\Friday\\";
+            if (!Directory.Exists(Monday))
+            {
+                Directory.CreateDirectory(Monday);
+            }
+            if(!Directory.Exists(Tuesday))
+            {
+                Directory.CreateDirectory(Tuesday);
+            }
+            if(!Directory.Exists(Wednesday))
+            {
+                Directory.CreateDirectory(Thursday);
+            }
+            if(!Directory.Exists(Friday))
+            {
+                Directory.CreateDirectory(Friday);
+            }
+            return;
+        }
+
+        public bool isEmptyLeft()
+        {
+            string dbname = Combobox_db.Text;
+            string login = tb_id.Text;
+            string servername = tb_server.Text;
+            string pass = tb_password.Text;
+
+            if (servername == "")
+            {
+                MessageBox.Show("Please enter a server name and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                return true;
+            }
+            else if (dbname == "")
+            {
+                MessageBox.Show("Please select a Database and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                return true;
+            }
+            else if (login == "")
+            {
+                MessageBox.Show("Please enter a user ID and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                return true;
+            }
+            else if(pass=="")
+            {
+                MessageBox.Show("Please enter a password and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool isEmptyRight()
+        {
+            if (string.IsNullOrEmpty(tb_path.Text) | string.IsNullOrEmpty(tb_path.Text))
+            {
+                MessageBox.Show("Please enter a path and try again.", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                return true;
+            }
+            else if (string.IsNullOrEmpty(tb_backupname.Text) | string.IsNullOrEmpty(tb_backupname.Text))
+            {
+                MessageBox.Show("Please enter a backup name and try again. ", "Missing Infromation!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public void enableRight()
+        {
+            tb_path.ReadOnly = false;
+            tb_backupname.ReadOnly = false;
+            lnklbl_schedule.Visible = true;
+            dateTimePicker1.Visible = true;
+            btn_backupfile.Visible = true;
+            btn_jobs.Visible = true;
+            btn_path.Visible = true;
         }
     }
 }

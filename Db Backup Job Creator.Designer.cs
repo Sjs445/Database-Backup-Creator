@@ -131,6 +131,7 @@
             // 
             this.tb_path.Location = new System.Drawing.Point(218, 47);
             this.tb_path.Name = "tb_path";
+            this.tb_path.ReadOnly = true;
             this.tb_path.Size = new System.Drawing.Size(121, 20);
             this.tb_path.TabIndex = 9;
             // 
@@ -142,6 +143,7 @@
             this.btn_path.TabIndex = 10;
             this.btn_path.Text = "...";
             this.btn_path.UseVisualStyleBackColor = true;
+            this.btn_path.Visible = false;
             this.btn_path.Click += new System.EventHandler(this.btn_path_Click);
             // 
             // lbl_name
@@ -157,6 +159,7 @@
             // 
             this.tb_backupname.Location = new System.Drawing.Point(218, 87);
             this.tb_backupname.Name = "tb_backupname";
+            this.tb_backupname.ReadOnly = true;
             this.tb_backupname.Size = new System.Drawing.Size(121, 20);
             this.tb_backupname.TabIndex = 12;
             // 
@@ -168,6 +171,7 @@
             this.btn_jobs.TabIndex = 15;
             this.btn_jobs.Text = "Create Jobs";
             this.btn_jobs.UseVisualStyleBackColor = true;
+            this.btn_jobs.Visible = false;
             this.btn_jobs.Click += new System.EventHandler(this.btn_jobs_Click);
             // 
             // lbl_server
@@ -235,6 +239,7 @@
             this.btn_backupfile.TabIndex = 16;
             this.btn_backupfile.Text = "Create Backup File";
             this.btn_backupfile.UseVisualStyleBackColor = true;
+            this.btn_backupfile.Visible = false;
             this.btn_backupfile.Click += new System.EventHandler(this.btn_backupfile_Click);
             // 
             // lnklbl_schedule
@@ -246,6 +251,7 @@
             this.lnklbl_schedule.TabIndex = 13;
             this.lnklbl_schedule.TabStop = true;
             this.lnklbl_schedule.Text = "Backup Schedule Time";
+            this.lnklbl_schedule.Visible = false;
             this.lnklbl_schedule.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnklbl_schedule_LinkClicked);
             // 
             // dateTimePicker1
@@ -258,6 +264,7 @@
             this.dateTimePicker1.Size = new System.Drawing.Size(121, 20);
             this.dateTimePicker1.TabIndex = 14;
             this.dateTimePicker1.Value = new System.DateTime(2018, 12, 6, 0, 0, 0, 0);
+            this.dateTimePicker1.Visible = false;
             // 
             // DB
             // 
