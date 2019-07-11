@@ -80,6 +80,7 @@
             this.tb_id.Name = "tb_id";
             this.tb_id.Size = new System.Drawing.Size(121, 20);
             this.tb_id.TabIndex = 3;
+            this.tb_id.Text = "sa";
             // 
             // tb_password
             // 

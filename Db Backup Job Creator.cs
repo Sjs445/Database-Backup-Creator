@@ -18,7 +18,9 @@ namespace Db_Backup_Job_Creator
         public DB()
         {
             InitializeComponent();
+            tb_server.Text = Environment.MachineName;   //Initializes server name text box as local machine hostname
         }
+        
         SqlConnection cnn;
         SqlCommand cmd;
         SqlDataReader dr;
