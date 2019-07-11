@@ -302,27 +302,17 @@ namespace Db_Backup_Job_Creator
 
         public bool isEmptyLeft()
         {
-            string dbname = Combobox_db.Text;
-            string login = tb_id.Text;
-            string servername = tb_server.Text;
-            string pass = tb_password.Text;
-
-            if (servername == "")
+            if (tb_server.Text == "")
             {
                 MessageBox.Show("Please enter a server name and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 return true;
             }
-            else if (dbname == "")
-            {
-                MessageBox.Show("Please select a Database and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-                return true;
-            }
-            else if (login == "")
+            else if (tb_id.Text == "")
             {
                 MessageBox.Show("Please enter a user ID and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 return true;
             }
-            else if(pass=="")
+            else if(tb_password.Text == "")
             {
                 MessageBox.Show("Please enter a password and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 return true;
@@ -343,6 +333,11 @@ namespace Db_Backup_Job_Creator
             else if (string.IsNullOrEmpty(tb_backupname.Text) | string.IsNullOrEmpty(tb_backupname.Text))
             {
                 MessageBox.Show("Please enter a backup name and try again. ", "Missing Infromation!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                return true;
+            }
+            else if(Combobox_db.Text=="Database Name")
+            {
+                MessageBox.Show("Please select a Database and try again. ", "Missing Information!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 return true;
             }
             else
