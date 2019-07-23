@@ -291,6 +291,10 @@ namespace Db_Backup_Job_Creator
             }
             if(!Directory.Exists(Wednesday))
             {
+                Directory.CreateDirectory(Wednesday);
+            }
+            if(!Directory.Exists(Thursday))
+            {
                 Directory.CreateDirectory(Thursday);
             }
             if(!Directory.Exists(Friday))
