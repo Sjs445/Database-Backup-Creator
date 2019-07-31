@@ -198,7 +198,7 @@ namespace Db_Backup_Job_Creator
                 case 3:
                     return "DB Backup Creator\\Thursday\\";
                 case 4:
-                    return "DB Backup Creator\\Monday\\";
+                    return "DB Backup Creator\\Friday\\";
                 default:
                     return "Error Log";
 
