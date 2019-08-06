@@ -32,7 +32,7 @@ namespace Db_Backup_Job_Creator
             string connectionString = null;
             string serverName = tb_server.Text;
 
-            connectionString = "Data source="+serverName+";User ID=" + username + ";Password=" + password;
+            connectionString = "Data source="+serverName+";User ID=" + username + ";Password=" + password+ ";Connection Timeout=2";
 
             cnn = new SqlConnection(connectionString);
 
