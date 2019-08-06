@@ -52,7 +52,7 @@ namespace Db_Backup_Job_Creator
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Can not open connection!", "Error.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Can not open connection!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -75,6 +75,8 @@ namespace Db_Backup_Job_Creator
             {
                 createFolder();
                 createDaysofweekPath();
+                createErrorLogPath();
+
                 string dbname = Combobox_db.Text;
                 string login = tb_id.Text;
                 string servername = tb_server.Text;
@@ -86,45 +88,109 @@ namespace Db_Backup_Job_Creator
                 {
 
                     query("use msdb;");
-                    try
-                    {   //Next feature to add is to specify how many days of the week you want to create backups for.
-                        //Another feature could be to check off another database for backing up multiple databases.
-                        //Create a folder called 'Failed Logs' or something in order to store why the program failed to backup/create jobs.
+                    
+                       //Next feature to add is to specify how many days of the week you want to create backups for.
+                       //Another feature could be to check off another database for backing up multiple databases.
+                       //Add feature that imports the path from an .ini or text file if they entered a path before.
                        
                         for (int i = 0; i <= 4; i++)
                         {
                             string jobname = tb_backupname.Text + " " + day(i);
+                            try
+                            {
+                                query("exec sp_add_job @job_name = N" + "'" + jobname + "'," +
+                                        "@enabled=1," +
+                                        "@description=N" + "'" + "Back up Database - " + dbname + "'," +
+                                        "@owner_login_name=" + "'" + login + "', " +
+                                        "@notify_level_eventlog=2," +
+                                        "@notify_level_email=2," +
+                                        "@notify_level_netsend=2," +
+                                        "@notify_level_page=2");
 
-                            query("exec sp_add_job @job_name = N" + "'" + jobname + "'," +
-                                    "@enabled=1," +
-                                    "@description=N" + "'" + "Back up Database - " + dbname + "'," +
-                                    "@owner_login_name=" + "'" + login + "', " +
-                                    "@notify_level_eventlog=2," +
-                                    "@notify_level_email=2," +
-                                    "@notify_level_netsend=2," +
-                                    "@notify_level_page=2");
+                            }
+                            catch (Exception ex)
+                            {
+                               
 
-                            query("exec sp_add_jobstep @job_name = N" + "'" + jobname + "'," +
+                                string SqlQuery = "exec sp_add_job @job_name = N" + "'" + jobname + "'," +
+                                        "@enabled=1," +
+                                        "@description=N" + "'" + "Back up Database - " + dbname + "'," +
+                                        "@owner_login_name=" + "'" + login + "', " +
+                                        "@notify_level_eventlog=2," +
+                                        "@notify_level_email=2," +
+                                        "@notify_level_netsend=2," +
+                                        "@notify_level_page=2\n\n";
+
+                                System.IO.File.WriteAllText(@"C:\DB Backup Creator\Error Logs\"+ DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") +".txt", SqlQuery);
+
+                                MessageBox.Show("Failed to create job when creating general job info for jobname: " + jobname+".", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+
+                            try
+                            {
+                                query("exec sp_add_jobstep @job_name = N" + "'" + jobname + "'," +
+                                        "@step_name=[" + dbname + "]," +
+                                        "@subsystem='TSQL'," +
+                                        "@command='BACKUP DATABASE [" + dbname + "] TO DISK=''" + pathname + "\\" + pathDay(i) + "\\" + backupname + ".bak '' WITH NOFORMAT, INIT,  NAME=''" + dbname + "-Full Database Backup'', SKIP, NOREWIND, NOUNLOAD,  STATS = 10'");
+                            }
+                            catch(Exception ex)
+                            {
+                                string SqlQuery = "exec sp_add_jobstep @job_name = N" + "'" + jobname + "'," +
                                     "@step_name=[" + dbname + "]," +
                                     "@subsystem='TSQL'," +
-                                    "@command='BACKUP DATABASE [" + dbname + "] TO DISK=''" + pathname + "\\" + pathDay(i) + "\\" + backupname + ".bak '' WITH NOFORMAT, INIT,  NAME=''" + dbname + "-Full Database Backup'', SKIP, NOREWIND, NOUNLOAD,  STATS = 10'");
+                                    "@command='BACKUP DATABASE [" + dbname + "] TO DISK=''" + pathname + "\\" + pathDay(i) + "\\" + backupname + ".bak '' WITH NOFORMAT, INIT,  NAME=''" + dbname + "-Full Database Backup'', SKIP, NOREWIND, NOUNLOAD,  STATS = 10'\n\n";
 
-                            query("exec sp_add_jobschedule @job_name= N" + "'" + jobname + "'," +
+                                System.IO.File.WriteAllText(@"C:\DB Backup Creator\Error Logs\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
+
+                                MessageBox.Show("Failed to create jobs when adding jobstep for jobname: " + jobname+".", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+
+                            try
+                            {
+                                query("exec sp_add_jobschedule @job_name= N" + "'" + jobname + "'," +
+                                        "@name = 'ScheduledBackup_msdb'," +
+                                        "@freq_type = 8," +
+                                        "@freq_interval = " + finterval(i) + "," +
+                                        "@active_start_time =" + time + "," +
+                                        "@freq_recurrence_factor = 1");
+                            }
+                            catch(Exception ex)
+                            {
+                                string SqlQuery = "exec sp_add_jobschedule @job_name= N" + "'" + jobname + "'," +
                                     "@name = 'ScheduledBackup_msdb'," +
                                     "@freq_type = 8," +
                                     "@freq_interval = " + finterval(i) + "," +
-                                    "@active_start_time ="+ time+"," +
-                                    "@freq_recurrence_factor = 1");
+                                    "@active_start_time =" + time + "," +
+                                    "@freq_recurrence_factor = 1";
 
-                            query("exec sp_add_jobserver @job_name=N" + "'" + jobname + "'," +
-                                "@server_name=N" + "'" + servername + "';");
+                                System.IO.File.WriteAllText(@"C:\DB Backup Creator\Error Logs\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
+
+                                MessageBox.Show("Failed to create jobs when creating schedule for jobname: " + jobname + " -- at time: "+time+".", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            } 
+
+                            try
+                            {
+                                query("exec sp_add_jobserver @job_name=N" + "'" + jobname + "'," +
+                                    "@server_name=N" + "'" + servername + "';");
+                            }
+                            catch(Exception ex)
+                            {
+                                string SqlQuery = "exec sp_add_jobserver @job_name=N" + "'" + jobname + "'," +
+                                    "@server_name=N" + "'" + servername + "';";
+
+                                System.IO.File.WriteAllText(@"C:\DB Backup Creator\Error Logs\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
+
+                                MessageBox.Show("Failed to create jobs when adding server target: " + servername+".", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+
                         }
-                        MessageBox.Show("Created four jobs for " + dbname+".");
-                        }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Could not create jobs.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+
+                        MessageBox.Show("Created four jobs for " + dbname+".", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
                 }
             }
         }
@@ -230,6 +296,8 @@ namespace Db_Backup_Job_Creator
             {
                 createFolder();
                 createBackupFolder();
+                createErrorLogPath();
+
                 try
                 {
                     query("backup database [" + dbname + "] to disk='" + s + "\\" + n + ".bak'");
@@ -237,7 +305,9 @@ namespace Db_Backup_Job_Creator
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Could not backup database.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    string SqlQuery = "backup database [" + dbname + "] to disk='" + s + "\\" + n + ".bak'";
+                    System.IO.File.WriteAllText(@"C:\DB Backup Creator\Error Logs\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
+                    MessageBox.Show("Could not backup database. Check error log for details.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -302,6 +372,15 @@ namespace Db_Backup_Job_Creator
                 Directory.CreateDirectory(Friday);
             }
             return;
+        }
+
+        public void createErrorLogPath()
+        {
+            string path = tb_path.Text + "DB Backup Creator\\Error Logs\\";
+            if(!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
         }
 
         public bool isEmptyLeft()
