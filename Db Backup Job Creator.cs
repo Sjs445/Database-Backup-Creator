@@ -49,6 +49,7 @@ namespace Db_Backup_Job_Creator
                 }
                 dr.Close();
                 enableRight();
+
             }
             catch (Exception ex)
             {
@@ -86,7 +87,6 @@ namespace Db_Backup_Job_Creator
 
                 if(str=="backup")
                 {
-
                     query("use msdb;");
                     
                        //Next feature to add is to specify how many days of the week you want to create backups for.
@@ -106,12 +106,9 @@ namespace Db_Backup_Job_Creator
                                         "@notify_level_email=2," +
                                         "@notify_level_netsend=2," +
                                         "@notify_level_page=2");
-
                             }
                             catch (Exception ex)
                             {
-                               
-
                                 string SqlQuery = "exec sp_add_job @job_name = N" + "'" + jobname + "'," +
                                         "@enabled=1," +
                                         "@description=N" + "'" + "Back up Database - " + dbname + "'," +
@@ -121,7 +118,7 @@ namespace Db_Backup_Job_Creator
                                         "@notify_level_netsend=2," +
                                         "@notify_level_page=2\n\n";
 
-                                System.IO.File.WriteAllText(@"C:\DB Backup Creator\Error Logs\"+ DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") +".txt", SqlQuery);
+                                System.IO.File.WriteAllText(@tb_path.Text+"\\DB Backup Creator\\Error Logs\\"+ DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") +".txt", SqlQuery);
 
                                 MessageBox.Show("Failed to create job when creating general job info for jobname: " + jobname+".", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 return;
@@ -141,7 +138,7 @@ namespace Db_Backup_Job_Creator
                                     "@subsystem='TSQL'," +
                                     "@command='BACKUP DATABASE [" + dbname + "] TO DISK=''" + pathname + "\\" + pathDay(i) + "\\" + backupname + ".bak '' WITH NOFORMAT, INIT,  NAME=''" + dbname + "-Full Database Backup'', SKIP, NOREWIND, NOUNLOAD,  STATS = 10'\n\n";
 
-                                System.IO.File.WriteAllText(@"C:\DB Backup Creator\Error Logs\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
+                                System.IO.File.WriteAllText(@tb_path.Text + "\\DB Backup Creator\\Error Logs\\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
 
                                 MessageBox.Show("Failed to create jobs when adding jobstep for jobname: " + jobname+".", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 return;
@@ -165,7 +162,7 @@ namespace Db_Backup_Job_Creator
                                     "@active_start_time =" + time + "," +
                                     "@freq_recurrence_factor = 1";
 
-                                System.IO.File.WriteAllText(@"C:\DB Backup Creator\Error Logs\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
+                                System.IO.File.WriteAllText(@tb_path.Text + "\\DB Backup Creator\\Error Logs\\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
 
                                 MessageBox.Show("Failed to create jobs when creating schedule for jobname: " + jobname + " -- at time: "+time+".", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 return;
@@ -181,16 +178,13 @@ namespace Db_Backup_Job_Creator
                                 string SqlQuery = "exec sp_add_jobserver @job_name=N" + "'" + jobname + "'," +
                                     "@server_name=N" + "'" + servername + "';";
 
-                                System.IO.File.WriteAllText(@"C:\DB Backup Creator\Error Logs\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
+                                System.IO.File.WriteAllText(@tb_path.Text + "\\DB Backup Creator\\Error Logs\\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
 
                                 MessageBox.Show("Failed to create jobs when adding server target: " + servername+".", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 return;
                             }
-
                         }
-
                         MessageBox.Show("Created four jobs for " + dbname+".", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
                 }
             }
         }
@@ -301,12 +295,13 @@ namespace Db_Backup_Job_Creator
                 try
                 {
                     query("backup database [" + dbname + "] to disk='" + s + "\\" + n + ".bak'");
+                    
                     MessageBox.Show("Created backup file for " + dbname + " in "+s, "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
                     string SqlQuery = "backup database [" + dbname + "] to disk='" + s + "\\" + n + ".bak'";
-                    System.IO.File.WriteAllText(@"C:\DB Backup Creator\Error Logs\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
+                    System.IO.File.WriteAllText(@tb_path.Text + "\\DB Backup Creator\\Error Logs\\" + DateTime.Now.ToString("MM-dd-yyyy HH-mm-ss") + ".txt", SqlQuery);
                     MessageBox.Show("Could not backup database. Check error log for details.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -326,7 +321,7 @@ namespace Db_Backup_Job_Creator
 
         public void createFolder()
         {
-            string pathName = tb_path.Text+"DB Backup Creator\\";
+            string pathName = tb_path.Text+"\\DB Backup Creator\\";
             if(!Directory.Exists(pathName))
             {
                 Directory.CreateDirectory(pathName);
@@ -337,20 +332,20 @@ namespace Db_Backup_Job_Creator
 
         public void createBackupFolder()
         {
-            if(!Directory.Exists(tb_path.Text+"DB Backup Creator\\Backups\\"))
+            if(!Directory.Exists(tb_path.Text+"\\DB Backup Creator\\Backups\\"))
             {
-                Directory.CreateDirectory(tb_path.Text + "DB Backup Creator\\Backups\\");
+                Directory.CreateDirectory(tb_path.Text + "\\DB Backup Creator\\Backups\\");
                 return;
             }
         }
 
         public void createDaysofweekPath()
         {
-            string Monday = tb_path.Text + "DB Backup Creator\\Monday\\";
-            string Tuesday = tb_path.Text + "DB Backup Creator\\Tuesday\\";
-            string Wednesday = tb_path.Text + "DB Backup Creator\\Wednesday\\";
-            string Thursday = tb_path.Text + "DB Backup Creator\\Thursday\\";
-            string Friday = tb_path.Text + "DB Backup Creator\\Friday\\";
+            string Monday = tb_path.Text + "\\DB Backup Creator\\Monday\\";
+            string Tuesday = tb_path.Text + "\\DB Backup Creator\\Tuesday\\";
+            string Wednesday = tb_path.Text + "\\DB Backup Creator\\Wednesday\\";
+            string Thursday = tb_path.Text + "\\DB Backup Creator\\Thursday\\";
+            string Friday = tb_path.Text + "\\DB Backup Creator\\Friday\\";
             if (!Directory.Exists(Monday))
             {
                 Directory.CreateDirectory(Monday);
@@ -376,7 +371,7 @@ namespace Db_Backup_Job_Creator
 
         public void createErrorLogPath()
         {
-            string path = tb_path.Text + "DB Backup Creator\\Error Logs\\";
+            string path = tb_path.Text + "\\DB Backup Creator\\Error Logs\\";
             if(!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
