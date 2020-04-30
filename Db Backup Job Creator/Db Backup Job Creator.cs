@@ -55,6 +55,18 @@ namespace Db_Backup_Job_Creator
             {
                 MessageBox.Show("Can not open connection!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+            try
+            {
+                //  Parses the server name into the server textbox
+                //  This fixes issues for instanced SQL installations0
+                cmd = new SqlCommand("select @@servername", cnn);
+                tb_server.Text = cmd.ExecuteScalar().ToString();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not parse server information. Make sure server name/instance is correct before creating backups.", "Notice!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            }
         }
 
         private void btn_list_Click(object sender, EventArgs e)
@@ -316,7 +328,8 @@ namespace Db_Backup_Job_Creator
         {
             MessageBox.Show("If the program fails to make the backup file or fails to create jobs make sure the following are true.\n" +
                 "1. The program must be on the machine running the SQL server." +
-                "\n2. The server name needs to be the hostname. It can't be 'localhost'.","Common Errors.", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                "\n2. The server name needs to be the hostname. It can't be 'localhost'." +
+                "\n3. If the server has an instanced installation, make sure the server name text box field includes the instanced name.","Common Errors.", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         public void createFolder()

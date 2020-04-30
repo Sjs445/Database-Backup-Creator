@@ -43,14 +43,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Db Backup Job Creator.exe" size="255400">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Db Backup Job Creator.exe" size="254976">
       <assemblyIdentity name="Db Backup Job Creator" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>QL974LSL164sdsLc7xXN8hLmMeTgzeNdewrjVVh8KZA=</dsig:DigestValue>
+        <dsig:DigestValue>ZQZlZiEGMw0c0flVx3rZ0gZ/xEFcctganE4+TabuLzc=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
